@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shounen World - Upload de Fotos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #0f0f0f;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        header {
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ff4500;
+            padding-bottom: 10px;
+        }
+        #formulario {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 450px;
+            margin: 0 auto 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background: #252525;
+            color: white;
+        }
+        /* Estilo especial para o campo de arquivo */
+        input[type="file"] {
+            background: transparent;
+            border: 1px dashed #ff4500;
+            cursor: pointer;
+        }
+        button {
+            background-color: #ff4500;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 95%;
+            margin-top: 10px;
+        }
+        button:hover { background-color: #e63e00; }
+        .cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        .card {
+            background: #1e1e1e;
+            width: 250px;
+            border-radius: 10px;
+            overflow: hidden;
+            padding-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+        }
+        .card img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            display: block;
+        }
+        .btn-remover {
+            background: #ff0000;
+            width: 80%;
+            font-size: 12px;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🔥 Shounen World</h1>
+        <p>Total de animes: <span id="contador">0</span></p>
+    </header>
+
+    <main>
+        <section id="formulario">
+            <h2>Cadastrar Novo Anime</h2>
+            <input type="text" id="nome" placeholder="Nome do Anime">
+            <input type="text" id="descricao" placeholder="Descrição curta">
+            
+            <label style="display:block; margin-top:10px; font-size: 14px; color: #bbb;">Escolha uma foto do seu computador:</label>
+            <input type="file" id="arquivoImagem" accept="image/*">
+            
+            <button onclick="adicionarAnime()">ADICIONAR</button>
+        </section>
+
+        <section id="lista-animes" class="cards-container"></section>
+    </main>
+
+    <script>
+        let animes = JSON.parse(localStorage.getItem('animes_upload')) || [];
+
+        function renderizar() {
+            const container = document.getElementById('lista-animes');
+            container.innerHTML = '';
+            
+            animes.forEach((anime, index) => {
+                container.innerHTML += `
+                    <div class="card">
+                        <img src="${anime.foto}">
+                        <h3>${anime.nome}</h3>
+                        <p>${anime.desc}</p>
+                        <button class="btn-remover" onclick="remover(${index})">REMOVER</button>
+                    </div>
+                `;
+            });
+            document.getElementById('contador').innerText = animes.length;
+            localStorage.setItem('animes_upload', JSON.stringify(animes));
+        }
+
+        function adicionarAnime() {
+            const nome = document.getElementById('nome').value;
+            const desc = document.getElementById('descricao').value;
+            const inputArquivo = document.getElementById('arquivoImagem');
+
+            // Verifica se tem arquivo e texto
+            if (nome && desc && inputArquivo.files[0]) {
+                const leitor = new FileReader();
+
+                // Esse código lê o arquivo e transforma em texto (Base64)
+                leitor.onload = function(e) {
+                    const base64Image = e.target.result;
+                    
+                    animes.push({ 
+                        nome: nome, 
+                        desc: desc, 
+                        foto: base64Image 
+                    });
+
+                    renderizar();
+
+                    // Limpa os campos
+                    document.getElementById('nome').value = '';
+                    document.getElementById('descricao').value = '';
+                    inputArquivo.value = '';
+                };
+
+                leitor.readAsDataURL(inputArquivo.files[0]);
+            } else {
+                alert("Preencha o nome, descrição e selecione uma imagem!");
+            }
+        }
+
+        function remover(index) {
+            animes.splice(index, 1);
+            renderizar();
+        }
+
+        renderizar();
+    </script>
+</body>
+</html>
